@@ -39,7 +39,7 @@ namespace WebApplication1.Controllers
         {
             var scriptMultiSig = generatePayment(extPubKeys, orderId);
             /**
-             * P2WSHをP2SHへネストしたアドレス（正しいか不安）
+             * P2WSHをP2SHへネストしたアドレス（※1　ちゃんとネストできてる？）
              * P2SH -> P2WSH -> P2MULTISIG
              */
             var bitcoinAdress = scriptMultiSig.WitHash.ScriptPubKey.Hash.ScriptPubKey.Hash.GetAddress(Network.TestNet);
@@ -81,6 +81,7 @@ namespace WebApplication1.Controllers
             decimal balance = 0;
             foreach (var utxo in jsonData["data"]["txs"])
             {
+                // txidからトランザクション取得（※2　chain.soから取得したtxidをそのままParseして大丈夫か？）
                 var transactionId = uint256.Parse(utxo["txid"].ToString());
                 var transactionResponse = client.GetTransaction(transactionId).Result;
 
@@ -99,7 +100,7 @@ namespace WebApplication1.Controllers
 
             // 売上回収用のビットコインアドレス
             var recciveAdress = BitcoinAddress.Create("2N8GaKiU895NHjMX5FxhwncaR94k9iuQZfn");
-
+            // アウトプットを作成
             TxOut txOut = new TxOut()
             {
                 Value = new Money(balance, MoneyUnit.BTC),
@@ -108,7 +109,7 @@ namespace WebApplication1.Controllers
 
             transaction.Outputs.Add(txOut);
             
-            // マルチシグの署名のつもり。でもこの辺りの実装が曖昧
+            // マルチシグの署名　（※3　この実装で合ってる？）
             foreach (var privateKey in privateKeys)
             {
                 transaction.Sign(privateKey.PrivateKey, transaction.Outputs.AsCoins().First());
@@ -120,9 +121,6 @@ namespace WebApplication1.Controllers
                 ViewBag.errorCode = "ErrorCode: " + broadcastResponse.Error.ErrorCode;
                 ViewBag.errorMessage = "Error message: " + broadcastResponse.Error.Reason;
             }
-            
-            // トランザクションをネットワークへブロードキャスト
-//            var response = BroadcastAsync(transaction.ToHex());
 
             ViewBag.errorCode = "OK";
             ViewBag.errorMessage = "";
@@ -166,19 +164,6 @@ namespace WebApplication1.Controllers
             ExtKey extKey = mnemonic.DeriveExtKey();
 
             return extKey.Derive(orderId).PrivateKey.GetWif(Network.TestNet);
-        }
-
-        private static async Task<HttpResponseMessage> BroadcastAsync(String toHex)
-        {
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-               { "tx_hex", toHex }
-            });
-
-            var httpClient = new HttpClient();
-            HttpResponseMessage response = await httpClient.PostAsync("https://chain.so/api/v2/send_tx/BTCTEST", content);
-
-            return response;
         }
     }
 }
