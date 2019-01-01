@@ -1,0 +1,27 @@
+﻿
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<h2>Step 0 - 拡張鍵ペアの生成</h2>
+<h3>管理者画面</h3>
+<p>オフラインのコールド環境でニーモニックと拡張鍵ペアを生成する。</p><br />
+
+<form asp-controller="Admin" asp-action="generateKyes" method="post">
+    @{ 
+        if (ViewBag.masterData != null)
+        {
+            var idx = 1;
+            foreach (KeyValuePair<string, string> item in ViewBag.masterData)
+            {
+                <label class="control-label">【ニーモニック@(idx)】</label>
+                <p>@item.Key</p>
+                <label class="control-label">【拡張公開鍵@(idx)】</label>
+                <p>@item.Value</p><hr />
+                idx++;
+            }
+        }
+    }
+
+    <button type="submit">生成する</button>
+</form>

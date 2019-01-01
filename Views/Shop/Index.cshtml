@@ -1,0 +1,25 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<form asp-controller="Shop" asp-action="generatePayAdress" method="post">
+    <h2>Step 1 - 支払先アドレスの生成</h2>
+    <h3>オーダーID</h3>
+    <input type="text" name="orderId" value="" />
+    <button type="submit">オーダーを作成する</button><br /><br />
+    <p>支払先アドレス：@ViewBag.BitcoinAdress</p>
+    <img src="@ViewBag.QrUrl" width="200" height="200" />
+</form>
+<hr />
+<form asp-controller="Shop" asp-action="withdrawal" method="post">
+    <h2>Step 2 - 売上回収トランザクションを作成</h2>
+    <h3>オーダーID</h3>
+    <p>受取アドレス：2N8GaKiU895NHjMX5FxhwncaR94k9iuQZfn</p>
+    <input type="text" name="orderId" value="" />
+    <button type="submit">売上回収トランザクションを作成</button>
+    <p>@ViewBag.hex</p>
+    <p>@ViewBag.broadcast</p>
+    <p>@ViewBag.errorCode</p>
+    <p>@ViewBag.errorMessage</p>
+</form>
